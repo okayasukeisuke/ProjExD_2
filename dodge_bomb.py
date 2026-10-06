@@ -14,6 +14,36 @@ DELTA = {pg.K_UP:(0,-5),
 os.chdir(os.path.dirname(os.path.abspath(__file__)))
 
 
+def gameover(screen: pg.Surface) -> None:
+    """
+    引数:screen
+    戻り値:無し
+    爆弾にぶつかったらゲームオーバー画面を出す
+    """
+    scr = pg.Surface((1100,650))#黒画面作成
+    scr.set_alpha(200)#透明度設定
+    fonto = pg.font.Font(None,80)
+    txt = fonto.render("GAME OVER",True,(255,255,255))#Game Overと書かれたフォントSurfaces作成
+    scr.blit(txt,[400,300])#Surfaceにblitする
+    kt_img = pg.transform.rotozoom(pg.image.load("fig/3.png"), 0, 0.9)#こうかとん写真アップロード
+    scr.blit(kt_img,[750,300])#Surfaceにblitする
+    scr.blit(kt_img,[350,300])#Surfaceにblitする
+    screen.blit(scr,[0,0])#Surfaceをscreen Surfaceにblitする
+    pg.display.update()
+    time.sleep(5)#五秒表示して閉じる
+
+
+def init_bb_imgs() -> tuple[list[pg.Surface], list[int]]:
+    bb_imgs = []
+    for r in range(1,11):
+        bb_img = pg.Surface((20*r,20*r))
+        pg.draw.circle(bb_img,(255,0,0),(10*r,10*r),10*r)
+        bb_img.set_colorkey((0,0,0))
+        bb_imgs.append(bb_img)
+    bb_accs = [a for a in range(1,11)]
+    return bb_imgs,bb_accs
+
+
 def check_bound(rect: pg.Rect) -> tuple[bool,bool]:
     """
     引数：こうかとんまたは爆弾のrect
@@ -26,6 +56,7 @@ def check_bound(rect: pg.Rect) -> tuple[bool,bool]:
     if rect.top < 0 or HEIGHT < rect.bottom:
         tate = False
     return yoko,tate
+
 
 def main():
     pg.display.set_caption("逃げろ！こうかとん")
@@ -44,6 +75,8 @@ def main():
 
     clock = pg.time.Clock()
     tmr = 0
+    bb_imgs,bb_spd = init_bb_imgs()
+
     while True:
         for event in pg.event.get():
             if event.type == pg.QUIT: 
@@ -73,7 +106,13 @@ def main():
             kk_rct.move_ip(-sum_mv[0],-sum_mv[1])
         screen.blit(kk_img, kk_rct)
 
-        bb_rct.move_ip(vx,vy)
+        avx = vx*bb_spd[min(tmr//500,9)]
+        avy = vy*bb_spd[min(tmr//500,9)]
+        bb_img = bb_imgs[min(tmr//500,9)]
+        bb_rct.width = bb_img.get_rect().width
+        bb_rct.height = bb_img.get_rect().height
+
+        bb_rct.move_ip(avx,avy)
         yoko,tate = check_bound(bb_rct)
         if not yoko:
             vx *= -1
@@ -85,19 +124,6 @@ def main():
         pg.display.update()
         tmr += 1
         clock.tick(50)
-
-def gameover(screen: pg.Surface) -> None:
-    scr = pg.Surface((1100,650))
-    scr.set_alpha(200)
-    fonto = pg.font.Font(None,80)
-    txt = fonto.render("GAME OVER",True,(255,255,255))
-    scr.blit(txt,[400,300])
-    kt_img = pg.transform.rotozoom(pg.image.load("fig/3.png"), 0, 0.9)
-    scr.blit(kt_img,[750,300])
-    scr.blit(kt_img,[350,300])
-    screen.blit(scr,[0,0])
-    pg.display.update()
-    time.sleep(5)
 
 
 if __name__ == "__main__":
