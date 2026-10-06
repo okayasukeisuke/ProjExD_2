@@ -2,6 +2,7 @@ import os
 import random
 import sys
 import pygame as pg
+import time
 
 
 WIDTH, HEIGHT = 1100, 650
@@ -50,7 +51,7 @@ def main():
         screen.blit(bg_img, [0, 0]) 
 
         if kk_rct.colliderect(bb_rct):
-            print("game over")
+            gameover(screen)
             return
 
         key_lst = pg.key.get_pressed()
@@ -84,6 +85,19 @@ def main():
         pg.display.update()
         tmr += 1
         clock.tick(50)
+
+def gameover(screen: pg.Surface) -> None:
+    scr = pg.Surface((1100,650))
+    scr.set_alpha(200)
+    fonto = pg.font.Font(None,80)
+    txt = fonto.render("GAME OVER",True,(255,255,255))
+    scr.blit(txt,[400,300])
+    kt_img = pg.transform.rotozoom(pg.image.load("fig/3.png"), 0, 0.9)
+    scr.blit(kt_img,[750,300])
+    scr.blit(kt_img,[350,300])
+    screen.blit(scr,[0,0])
+    pg.display.update()
+    time.sleep(5)
 
 
 if __name__ == "__main__":
